@@ -107,7 +107,10 @@ function Show_CT()
 	    w_ct.close = CreateFrame("Button", "CindersTracker_Window_CloseButton", w_ct, "UIPanelCloseButton")
 	    w_ct.close:SetPoint("TOPRIGHT", w_ct)
 	    w_ct.close:SetSize(34, 34)
-	    w_ct.close:SetScript("OnClick", function() w_ct:Hide() end)
+	    w_ct.close:SetScript("OnClick", function()
+            doCheck = false
+            w_ct:Hide()
+        end)
 	    -- Texture
 	    w_ct.bg = w_ct:CreateTexture()
 	    w_ct.bg:SetAllPoints(w_ct)
