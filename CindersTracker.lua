@@ -7,16 +7,17 @@ local TRINKET_RANGE = 10
 local position_list = nil
 
 local settings = {
-	[1] = {
-		name = "activateRaid",
-		default = false,
-		text = "Start tracking when entering a raid.",
-		sub = false,
-	}
+	--[1] = {
+	--	name = "activateRaid",
+	--	default = false,
+	--	text = "Start tracking when entering a raid.",
+	--	sub = false,
+	--}
 }
 
 local range_radar = nil
 local players_found = nil
+local players_in_raid = {}
 
 
 function tablelength(T)
@@ -52,7 +53,7 @@ function SlashCmdList.CINDERSTRACKER(msg, editbox)
 	if msg == "test" then
 		if IsInRaid() then
 			position_list = FindPosition(ctSettings.names)
-			print(#position_list)
+			CTWritePlayersInRaid()
 			current_pos = 1
 			index_checker = 1
 			doCheck = not doCheck
@@ -190,6 +191,7 @@ function FindPosition(names)
 
 	local num = GetNumGroupMembers()
 	local returner = {}
+	players_in_raid = {}
 	for i = 1, num do
 		local name, _, _, _, _, _, _, online = GetRaidRosterInfo(i)
 		print(name)
@@ -200,7 +202,8 @@ function FindPosition(names)
 				print(names[j])
 				if names[j] == name then
 					tinsert(returner, i)
-					print(name .. " " .. i)
+					tinsert(players_in_raid, name)
+					--print(name .. " " .. i)
 				end
 			end
 		end
@@ -319,6 +322,8 @@ function CreatePlayersFoundFrame()
 		players_found.text:SetFont("Fonts\\FRIZQT__.TTF", 14)
 		--range_radar.text:SetMultiLine(true)
 		players_found.string = {}
+
+		CTWritePlayersInRaid()
 		--players_found.text:SetText("aaaa\nbbbbb\ncccccccc\ndddddddddddddddddddddddd")
 
 		players_found:Show()
@@ -329,6 +334,15 @@ end
 
 --Show_CT()
 
+function CTWritePlayersInRaid()
+	local s = ""
+	if #players_in_raid > 0 then
+		for i = 1, #players_in_raid do
+			s = s..players_in_raid[i]
+		end
+		players_found.text:SetText(s)
+	end
+end
 
 local index_checker = 1
 local current_pos = nil
@@ -344,9 +358,7 @@ function OnUpdate(self, elapsed)
 			if minRange then
 				if minRange <= TRINKET_RANGE then
 					if not written(UnitName("raid"..current_pos)) then
-						--print(select(1, UnitName("party"..current_pos)))
 						players_found.string[#players_found.string+1] = UnitName("raid"..current_pos)
-						--table.insert(players_found.string, select(1, UnitName("party"..current_pos)))
 					end
 				else
 					tableremove(players_found.string, UnitName("raid"..current_pos))
@@ -388,6 +400,7 @@ end
 function ctEvents:GROUP_JOINED(...)
 	if IsInRaid() then
 		position_list = FindPosition(ctSettings.names)
+		CTWritePlayersInRaid()
 		index_checker = 1
 		current_pos = 1
 	end
@@ -396,13 +409,18 @@ end
 function ctEvents:GROUP_ROSTER_UPDATE(...)
 	if IsInRaid() then
 		position_list = FindPosition(ctSettings.names)
+		CTWritePlayersInRaid()
 		index_checker = 1
 		current_pos = 1
 	end
 end
 
 function ctEvents:INSTANCE_ENCOUNTER_ENGAGE_UNIT(...)
-	if IsInRaid() then
+	if doCheck then
+		doCheck = false
+		players_found:Hide()
+		range_radar:Hide()
+	elseif IsInRaid() then
 		doCheck = not doCheck
 		CreateRangeRadarFrame()
 		CreatePlayersFoundFrame()
