@@ -3,10 +3,12 @@ local RC = LibStub("LibRangeCheck-2.0")
 local ct = CreateFrame("Frame")
 local ctEvents = {}
 
+local w_ct = nil
+local doCheck = false
 local TRINKET_RANGE = 10
 local position_list = nil
-
 local settings = {
+    -- TODO : Add options such as when to activate stuff and shit
 	--[1] = {
 	--	name = "activateRaid",
 	--	default = false,
@@ -14,7 +16,6 @@ local settings = {
 	--	sub = false,
 	--}
 }
-
 local range_radar = nil
 local players_found = nil
 local players_in_raid = {}
@@ -26,7 +27,7 @@ function tablelength(T)
   return count
 end
 
---print(ctSettings)
+
 if ctSettings == nil then
 	ctSettings = {}
 	for i = 1, tablelength(settings) do
@@ -40,10 +41,7 @@ if ctSettings == nil then
 	}
 end
 
-local w = nil
 
-
-local doCheck = false
 
 SLASH_CINDERSTRACKER1 = "/ct"
 SLASH_CINDERSTRACKER2 = "/cinderstracker"
@@ -62,8 +60,6 @@ function SlashCmdList.CINDERSTRACKER(msg, editbox)
 
 		end
 	end
-	--doCheck = not doCheck
-
 	Show_CT()
 end
 
@@ -198,16 +194,11 @@ function FindPosition(names)
 	players_in_raid = {}
 	for i = 1, num do
 		local name, _, _, _, _, _, _, online = GetRaidRosterInfo(i)
-		--print(name)
-		--print(online)
 		if online then
-			--tinsert(returner, i)
 			for j = 1, #names do
-				--print(names[j])
 				if names[j] == name then
 					tinsert(returner, i)
 					tinsert(players_in_raid, name)
-					--print(name .. " " .. i)
 				end
 			end
 		end
@@ -279,17 +270,11 @@ function CreateRangeRadarFrame()
 		range_radar.text:SetJustifyV("MIDDLE")
 		range_radar.text:SetPoint("CENTER")
 		range_radar.text:SetFont("Fonts\\FRIZQT__.TTF", 14)
-		--range_radar.text:SetMultiLine(true)
-
-
-
-		--range_radar.text:SetText("aaaa\nbbbbb\ncccccccc")
 
 		range_radar:Show()
 	elseif not range_radar:IsShown() then range_radar:Show()
 	elseif range_radar:IsShown() then range_radar:Hide() end
 end
---CreateRangeRadarFrame()
 
 function CreatePlayersFoundFrame()
 	if players_found == nil then
@@ -324,19 +309,14 @@ function CreatePlayersFoundFrame()
 		players_found.text:SetJustifyV("TOP")
 		players_found.text:SetPoint("CENTER")
 		players_found.text:SetFont("Fonts\\FRIZQT__.TTF", 14)
-		--range_radar.text:SetMultiLine(true)
 		players_found.string = {}
 
 		CTWritePlayersInRaid()
-		--players_found.text:SetText("aaaa\nbbbbb\ncccccccc\ndddddddddddddddddddddddd")
 
 		players_found:Show()
 	elseif not players_found:IsShown() then players_found:Show()
 	elseif players_found:IsShown() then players_found:Hide() end
 end
---CreatePlayersFoundFrame()
-
---Show_CT()
 
 function CTWritePlayersInRaid()
 	local s = ""
@@ -355,25 +335,19 @@ function OnUpdate(self, elapsed)
         if index_checker > #position_list then index_checker = 1; current_pos = position_list[index_checker] end
         if position_list == nil then FindPosition(ctSetting.names) end
 		if current_pos == nil then current_pos = position_list[index_checker] end
-		--if current_pos > #position_list then
-		--	index_checker = 1
-        --    current_pos = position_list[index_checker]
-		--end
-		--if current_pos <= #position_list then
-			local minRange, _ = RC:GetRange('raid'..current_pos)
-			if minRange then
-				if minRange <= TRINKET_RANGE then
-					if not written(UnitName("raid"..current_pos)) then
-						players_found.string[#players_found.string+1] = UnitName("raid"..current_pos)
-					end
-				else
-					tableremove(players_found.string, UnitName("raid"..current_pos))
+		local minRange, _ = RC:GetRange('raid'..current_pos)
+		if minRange then
+			if minRange <= TRINKET_RANGE then
+				if not written(UnitName("raid"..current_pos)) then
+					players_found.string[#players_found.string+1] = UnitName("raid"..current_pos)
 				end
+			else
+				tableremove(players_found.string, UnitName("raid"..current_pos))
 			end
-			Write_CT()
-			index_checker = index_checker + 1
-			current_pos = position_list[index_checker]
-		--end
+		end
+		Write_CT()
+		index_checker = index_checker + 1
+		current_pos = position_list[index_checker]
 	end
 end
 ct:SetScript("OnUpdate", OnUpdate)
