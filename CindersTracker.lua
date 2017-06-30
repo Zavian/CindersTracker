@@ -53,12 +53,13 @@ function SlashCmdList.CINDERSTRACKER(msg, editbox)
 	if msg == "test" then
 		if IsInRaid() then
 			position_list = FindPosition(ctSettings.names)
+            CreateRangeRadarFrame()
+			CreatePlayersFoundFrame()
 			CTWritePlayersInRaid()
 			current_pos = 1
 			index_checker = 1
 			doCheck = not doCheck
-			CreateRangeRadarFrame()
-			CreatePlayersFoundFrame()
+
 		end
 	end
 	--doCheck = not doCheck
@@ -156,7 +157,7 @@ function Show_CT()
 		end)
 		w_ct.CopyChatBox:SetScript("OnEditFocusLost", function()
 			ctSettings.names = split(w_ct.CopyChatBox:GetText(), "\n")
-			print(#ctSettings.names)
+			--print(#ctSettings.names)
 		end)
 
 	    w_ct.Scroll = CreateFrame('ScrollFrame', 'copyScroll', w_ct.CopyChat, 'UIPanelScrollFrameTemplate')
@@ -194,12 +195,12 @@ function FindPosition(names)
 	players_in_raid = {}
 	for i = 1, num do
 		local name, _, _, _, _, _, _, online = GetRaidRosterInfo(i)
-		print(name)
-		print(online)
+		--print(name)
+		--print(online)
 		if online then
 			--tinsert(returner, i)
 			for j = 1, #names do
-				print(names[j])
+				--print(names[j])
 				if names[j] == name then
 					tinsert(returner, i)
 					tinsert(players_in_raid, name)
@@ -338,7 +339,7 @@ function CTWritePlayersInRaid()
 	local s = ""
 	if #players_in_raid > 0 then
 		for i = 1, #players_in_raid do
-			s = s..players_in_raid[i]
+			s = s..players_in_raid[i].."\n"
 		end
 		players_found.text:SetText(s)
 	end
@@ -348,12 +349,14 @@ local index_checker = 1
 local current_pos = nil
 function OnUpdate(self, elapsed)
 	if doCheck then
-		if current_pos == nil then current_pos = 1 end
-		if current_pos > #position_list then
-			current_pos = 1
-			index_checker = 1
-		end
-		if current_pos <= #position_list then
+        if index_checker > #position_list then index_checker = 1; current_pos = position_list[index_checker] end
+        if position_list == nil then FindPosition(ctSetting.names) end
+		if current_pos == nil then current_pos = position_list[index_checker] end
+		--if current_pos > #position_list then
+		--	index_checker = 1
+        --    current_pos = position_list[index_checker]
+		--end
+		--if current_pos <= #position_list then
 			local minRange, _ = RC:GetRange('raid'..current_pos)
 			if minRange then
 				if minRange <= TRINKET_RANGE then
@@ -367,7 +370,7 @@ function OnUpdate(self, elapsed)
 			Write_CT()
 			index_checker = index_checker + 1
 			current_pos = position_list[index_checker]
-		end
+		--end
 	end
 end
 ct:SetScript("OnUpdate", OnUpdate)
@@ -382,7 +385,7 @@ end
 function Write_CT()
 	local s = ""
 	for i = 1, #players_found.string do
-		s = s..players_found.string[i]
+		s = s..players_found.string[i].."\n"
 	end
 	if s == "" then s = ":(" end
 	range_radar.text:SetText(s)
@@ -421,7 +424,10 @@ function ctEvents:INSTANCE_ENCOUNTER_ENGAGE_UNIT(...)
 		players_found:Hide()
 		range_radar:Hide()
 	elseif IsInRaid() then
-		doCheck = not doCheck
+        index_checker = 1
+		current_pos = 1
+		doCheck = true
+
 		CreateRangeRadarFrame()
 		CreatePlayersFoundFrame()
 	end
