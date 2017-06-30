@@ -1,0 +1,12 @@
+## Interface: 70200
+## Title : |cFF6cafccCinders Tracker|r
+## Version: 1.0
+## Notes: Why can't I hold all this crit?
+## Author: Zavian
+## Email: zavian.mail@gmail.com
+## DefaultState: enabled
+## SavedVariablesPerCharacter: ctSettings
+
+embeds.xml
+CindersTracker.xml
+CindersTracker.lua
