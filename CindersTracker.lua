@@ -54,7 +54,7 @@ function SlashCmdList.CINDERSTRACKER(msg, editbox)
             CreateRangeRadarFrame()
 			CreatePlayersFoundFrame()
 			CTWritePlayersInRaid()
-			current_pos = 1
+			current_post = position_list[index_checker]
 			index_checker = 1
 			doCheck = not doCheck
 
@@ -382,7 +382,7 @@ function ctEvents:GROUP_JOINED(...)
 		position_list = FindPosition(ctSettings.names)
 		CTWritePlayersInRaid()
 		index_checker = 1
-		current_pos = 1
+		current_post = position_list[index_checker]
 	end
 end
 
@@ -391,7 +391,16 @@ function ctEvents:GROUP_ROSTER_UPDATE(...)
 		position_list = FindPosition(ctSettings.names)
 		CTWritePlayersInRaid()
 		index_checker = 1
-		current_pos = 1
+		current_post = position_list[index_checker]
+	end
+end
+
+function ctEvents:PLAYER_ENTERING_WORLD(...)
+    if IsInRaid() then
+		position_list = FindPosition(ctSettings.names)
+		CTWritePlayersInRaid()
+		index_checker = 1
+		current_post = position_list[index_checker]
 	end
 end
 
@@ -402,7 +411,7 @@ function ctEvents:INSTANCE_ENCOUNTER_ENGAGE_UNIT(...)
 		range_radar:Hide()
 	elseif IsInRaid() then
         index_checker = 1
-		current_pos = 1
+		current_post = position_list[index_checker]
 		doCheck = true
 
 		CreateRangeRadarFrame()
