@@ -249,7 +249,7 @@ function CreateRangeRadarFrame()
 	    range_radar.close = CreateFrame("Button", "CindersTracker_RangeRadar_CloseButton", range_radar, "UIPanelCloseButton")
 	    range_radar.close:SetPoint("TOPRIGHT", range_radar, 0, 20)
 	    range_radar.close:SetSize(25, 25)
-	    range_radar.close:SetScript("OnClick", function() range_radar:Hide() end)
+	    range_radar.close:SetScript("OnClick", function() range_radar:Hide(); doCheck = false; end)
 
 		-- Texture
 	    range_radar.bg = range_radar:CreateTexture()
